@@ -1,0 +1,8 @@
+-   repo: https://github.com/pre-commit/mirrors-quicktest
+    rev: v1.0.3
+    hooks:
+    -   id: quicktest
+-   repo: https://github.com/pre-commit/mirrors-black
+    rev: v20.8b1
+    hooks:
+    -   id: black
