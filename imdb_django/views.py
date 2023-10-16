@@ -36,12 +36,11 @@ class TitleList(generics.ListAPIView):
     filterset_fields = ["titleType", "isAdult"]  # Allow filtering on specific fields
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = Title.objects.filter(
+            Q(titleType__icontains="movie") | Q(titleType__icontains="tvSeries")
+        )
 
-        # Apply filters
-        new_queryset = self.filter_queryset(queryset)
-
-        return new_queryset
+        return queryset
 
 
 class UserFavoriteTVShowViewSet(viewsets.ModelViewSet):
