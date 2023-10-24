@@ -1,20 +1,13 @@
+# myapp/management/commands/import_ratings_data.py
+
 import csv
-import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Title, TitleRating
+from helper import log_info  # Import the log_info function
 
-# Initialize the logger
-logger = logging.getLogger(__name__)
 
-# Custom function to log detailed information
-def log_info(header, data):
-    logger.info(header)
-    for key, value in data.items():
-        logger.info(f"{key}: {value}")
-    logger.info("")
-
-class MyCommandForImportingRatingsData(BaseCommand):
+class RatingsDataImportCommand(BaseCommand):
     help = "Load data from TSV file into TitleRating model"
 
     def add_arguments(self, parser):
@@ -38,6 +31,7 @@ class MyCommandForImportingRatingsData(BaseCommand):
                 # Use bulk_create to insert the rows with ignore_conflicts=True
                 TitleRating.objects.bulk_create(title_ratings_to_create, ignore_conflicts=True)
 
+        # Log a message to indicate completion
         log_info(f"\nData import completed. Loaded {row_count} rows.")
 
     def process_row(self, row, row_count):
@@ -46,9 +40,11 @@ class MyCommandForImportingRatingsData(BaseCommand):
         num_Votes = int(row["numVotes"])
 
         t_const_instance, _ = self.get_or_create_title(t_const)
-        return TitleRating(
-            t_const=t_const_instance,
-        )
+
+        # Log the data for the current row using log_info function
+        self.log_row_data(row_count, t_const, average_Rating, num_Votes)
+
+        return TitleRating(t_const=t_const_instance, average_rating=average_Rating, num_votes=num_Votes)
 
     def get_or_create_title(self, tconst_str):
         return Title.objects.get_or_create(tconst=tconst_str)

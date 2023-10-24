@@ -1,20 +1,12 @@
+# myapp/management/commands/import_name_data.py
+
 import csv
-import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Name, Title
+from helper import log_info
 
-# Initialize the logger
-logger = logging.getLogger(__name__)
-
-# Custom function to log detailed information
-def log_info(header, data):
-    logger.info(header)
-    for key, value in data.items():
-        logger.info(f"{key}: {value}")
-    logger.info("")
-
-class MyCommandForImportingNamesData(BaseCommand):
+class NameDataImportCommand(BaseCommand):
     help = "Load data from TSV file into Name model"
 
     def add_arguments(self, parser):
@@ -38,6 +30,7 @@ class MyCommandForImportingNamesData(BaseCommand):
                 # Use bulk_create to insert the rows with ignore_conflicts=True
                 Name.objects.bulk_create(name_data_to_create, ignore_conflicts=True)
 
+        # Log a message to indicate completion
         log_info(f"\nData import completed. Loaded {row_count} rows.")
 
     def process_row(self, row, row_count):
@@ -45,7 +38,7 @@ class MyCommandForImportingNamesData(BaseCommand):
         primaryName = row["primaryName"]
         birthYear = int(row["birthYear"]) if row["birthYear"] != "\\N" else None
         deathYear = int(row["deathYear"]) if row["deathYear"] != "\\N" else None
-        primaryProfession = row["primaryProfession"]
+        primary_Profession = row["primaryProfession"]
         known_for_titles_str = row["knownForTitles"]
 
         name_instance, _ = self.get_or_create_name(n_const)

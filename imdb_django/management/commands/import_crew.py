@@ -1,21 +1,14 @@
+# myapp/management/commands/import_crew_data.py
+
 import csv
 import logging
-
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Name, Title, TitleCrew
+from helper import log_info  # Import the log_info function
 
-# Initialize the logger
-logger = logging.getLogger(__name__)
 
-# Custom function to log detailed information
-def log_info(header, data):
-    logger.info(header)
-    for key, value in data.items():
-        logger.info(f"{key}: {value}")
-    logger.info("")
-
-class MyCommandForImportingCrewData(BaseCommand):
+class CrewDataImportCommand(BaseCommand):
     help = "Load data from TSV file into TitleCrew model"
 
     def add_arguments(self, parser):
@@ -39,7 +32,8 @@ class MyCommandForImportingCrewData(BaseCommand):
                 # Use bulk_create to insert or update the rows with ignore_conflicts=True
                 TitleCrew.objects.bulk_create(title_crew_data, ignore_conflicts=True)
 
-        log_info(f"\nData import completed. Loaded {row_count} rows.")
+        # Log a message to indicate completion
+        log_info(f"Data import completed. Loaded {row_count} rows.")
 
     def process_row(self, row, row_count):
         t_const = row["tconst"]
@@ -54,6 +48,9 @@ class MyCommandForImportingCrewData(BaseCommand):
         writers_str = row["writers"]
         writers_list = writers_str.split(",")
         writers = Name.objects.filter(n_const__in=writers_list)
+
+        # Log the data for the current row using log_info function
+        self.log_row_data(row_count, t_const, directors_str, writers_str)
 
         return TitleCrew(t_const=title_instance, directors=directors, writers=writers)
 

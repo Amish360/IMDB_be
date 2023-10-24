@@ -90,9 +90,9 @@ def search_names(request):
 
     # Query to filter based on the primaryName field in the Name model
     if search_term:
-        names = Name.objects.filter(primaryName__icontains=search_term)
+        names = Name.objects.filter(primaryName__icontains=search_term).order_by('primaryName')
     else:
-        names = Name.objects.all()
+        names = Name.objects.all().order_by('primaryName')
 
     # Serialize the names using the serializer
     serializer = NameSerializer(names, many=True)
@@ -104,13 +104,13 @@ def search_names(request):
 def search_movies(request):
     search_term = request.GET.get("search", "")
 
-    # Query to filter based on the primaryName field in the Name model
+    # Query to filter based on the primaryTitle field in the Title model
     if search_term:
-        movies = Title.objects.filter(primaryTitle__icontains=search_term)
+        movies = Title.objects.filter(primaryTitle__icontains=search_term).order_by('primaryTitle')
     else:
-        movies = Title.objects.all()
+        movies = Title.objects.all().order_by('primaryTitle')
 
-    # Serialize the names using the serializer
+    # Serialize the movies using the serializer
     serializer = TitleSerializer(movies, many=True)
 
     return Response({"results": serializer.data})

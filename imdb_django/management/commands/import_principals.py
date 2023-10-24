@@ -1,20 +1,14 @@
+# myapp/management/commands/import_principals_data.py
+
 import csv
-import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Name, Title, TitlePrincipal
+from helper import log_info  # Import the log_info function
 
 # Initialize the logger
-logger = logging.getLogger(__name__)
 
-# Custom function to log detailed information
-def log_info(header, data):
-    logger.info(header)
-    for key, value in data.items():
-        logger.info(f"{key}: {value}")
-    logger.info("")
-
-class MyCommandForImportingPrincipalsData(BaseCommand):
+class PrincipalsDataImportCommand(BaseCommand):
     help = "Load data from TSV file into TitlePrincipal model"
 
     def add_arguments(self, parser):
@@ -38,6 +32,7 @@ class MyCommandForImportingPrincipalsData(BaseCommand):
                 # Use bulk_create to insert the rows with ignore_conflicts=True
                 TitlePrincipal.objects.bulk_create(title_principals_to_create, ignore_conflicts=True)
 
+        # Log a message to indicate completion
         log_info(f"\nData import completed. Loaded {row_count} rows.")
 
     def process_row(self, row, row_count):
@@ -52,6 +47,9 @@ class MyCommandForImportingPrincipalsData(BaseCommand):
         name_instance, _ = self.get_or_create_name(n_const)
         job = self.truncate_job(job)
 
+        # Log the data for the current row using log_info function
+        self.log_row_data(row_count, t_const, ordering, n_const, category, job, characters)
+
         return TitlePrincipal(
             t_const=title_instance,
         )
@@ -65,7 +63,7 @@ class MyCommandForImportingPrincipalsData(BaseCommand):
     def truncate_job(self, job):
         max_job_length = TitlePrincipal._meta.get_field("job").max_length
         if len(job) > max_job_length:
-            self.stdout.write(self.style.WARNING(f'Truncated "job" field value. Original value: {job}'))
+            logger.warning(f'Truncated "job" field value. Original value: {job}')
             job = job[:max_job_length]
         return job
 

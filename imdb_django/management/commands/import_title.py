@@ -1,20 +1,13 @@
+# myapp/management/commands/import_title_data.py
+
 import csv
-import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Genre, Title
+from helper import log_info  # Import the log_info function
 
-# Initialize the logger
-logger = logging.getLogger(__name__)
 
-# Custom function to log detailed information
-def log_info(header, data):
-    logger.info(header)
-    for key, value in data.items():
-        logger.info(f"{key}: {value}")
-    logger.info("")
-
-class MyCommandForImportingTitleData(BaseCommand):
+class TitleDataImportCommand(BaseCommand):
     help = "Load data from TSV file into MySQL database"
 
     def add_arguments(self, parser):
@@ -45,6 +38,7 @@ class MyCommandForImportingTitleData(BaseCommand):
                 if titles_to_create:
                     Title.objects.bulk_create(titles_to_create)
 
+        # Log a message to indicate completion
         log_info(f"\nData import completed. Loaded {row_count} rows.")
 
     def process_row(self, row):

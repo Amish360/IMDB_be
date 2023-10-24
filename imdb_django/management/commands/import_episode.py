@@ -1,20 +1,16 @@
+# myapp/management/commands/import_episode_data.py
+
 import csv
 import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Title, TitleEpisode
+from helper import log_info  # Import the log_info function
 
 # Initialize the logger
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name)
 
-# Custom function to log detailed information
-def log_info(header, data):
-    logger.info(header)
-    for key, value in data.items():
-        logger.info(f"{key}: {value}")
-    logger.info("")
-
-class MyCommandForImportingEpisodesData(BaseCommand):
+class EpisodeDataImportCommand(BaseCommand):
     help = "Load data from TSV file into MySQL database"
 
     def add_arguments(self, parser):
@@ -38,7 +34,8 @@ class MyCommandForImportingEpisodesData(BaseCommand):
                 # Use bulk_create to insert or update the rows with ignore_conflicts=True
                 TitleEpisode.objects.bulk_create(title_episodes_to_create, ignore_conflicts=True)
 
-        log_info(f"\nData import completed. Loaded {row_count} rows.")
+        # Log a message to indicate completion
+        log_info(f"Data import completed. Loaded {row_count} rows.")
 
     def process_row(self, row, row_count):
         t_const = row["tconst"]
@@ -56,6 +53,9 @@ class MyCommandForImportingEpisodesData(BaseCommand):
 
         title_instance, _ = self.get_or_create_title(t_const)
         title_parent_instance, _ = self.get_or_create_title_parent(title)
+
+        # Log the data for the current row using log_info function
+        self.log_row_data(row_count, t_const, title_instance, season_Number, episode_Number)
 
         return TitleEpisode(
             t_const=title_instance,

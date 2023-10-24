@@ -8,7 +8,7 @@ class Genre(models.Model):
     name = models.CharField(max_length=255)
 
     class Meta:
-        app_label = 'genre_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
         return self.name
@@ -26,10 +26,10 @@ class Title(models.Model):
     genres = models.ManyToManyField(Genre, related_name='genres')
 
     class Meta:
-        app_label = 'title_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.title_Type} ({self.primary_Title}) ({self.original_Title}) ({self.is_Adult}) ({self.start_Year}) ({self.end_Year}) ({self.runtime_Minutes}) ({self.genres})"
+        return f"({self.t_const}, {self.primary_Title})"
 
 
 class TitleAka(models.Model):
@@ -43,10 +43,10 @@ class TitleAka(models.Model):
     is_Original_Title = models.BooleanField()
 
     class Meta:
-        app_label = 'aka_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.ordering} ({self.title}) ({self.region}) ({self.language}) ({self.types}) ({self.attributes}) ({self.is_Original_Title})"
+        return f"({self.t_const}, {self.title})"
 
 
 class TitleCrew(models.Model):
@@ -55,10 +55,10 @@ class TitleCrew(models.Model):
     writers = models.ManyToManyField("Name", related_name="written_titles")
 
     class Meta:
-        app_label = 'crew_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.directors} ({self.writers})"
+        return f"({self.directors}, {self.writers})"
 
 
 class TitleEpisode(models.Model):
@@ -70,10 +70,10 @@ class TitleEpisode(models.Model):
     episode_Number = models.PositiveIntegerField(unique=True)
 
     class Meta:
-        app_label = 'episode_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.t_const} ({self.title}) ({self.season_Number}) ({self.episode_Number})"
+        return f"({self.t_const}, {self.season_Number}, {self.episode_Number})"
 
 
 class TitlePrincipal(models.Model):
@@ -85,10 +85,10 @@ class TitlePrincipal(models.Model):
     characters = models.CharField(max_length=255)
 
     class Meta:
-        app_label = 'principal_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.ordering} ({self.characters}) ({self.category}) ({self.job})"
+        return f"({self.ordering}, {self.characters})"
 
 
 def validate_float_range(value):
@@ -102,10 +102,10 @@ class TitleRating(models.Model):
     num_Votes = models.PositiveIntegerField()
 
     class Meta:
-        app_label = 'ratings_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.t_const} ({self.average_Rating}) ({self.num_Votes})"
+        return f"({self.t_const}, {self.average_Rating})"
 
 
 class Name(models.Model):
@@ -117,10 +117,10 @@ class Name(models.Model):
     known_For_Titles = models.ManyToManyField(Title, related_name="known_for_names")
 
     class Meta:
-        app_label = 'name_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.primary_Name} ({self.birth_Year}) ({self.death_Year}) ({self.primary_Profession}) ({self.known_For_Titles})"
+        return f"({self.primary_Name}, {self.primary_Profession})"
 
 
 class UserFavoriteTVShow(models.Model):
@@ -128,7 +128,7 @@ class UserFavoriteTVShow(models.Model):
     tv_show = models.ForeignKey(Title, on_delete=models.CASCADE)
 
     class Meta:
-        app_label = 'user_fav_app'
+        app_label = 'imdb_django'
 
     def __str__(self):
-        return f"{self.user} ({self.tv_show})"
+        return f"({self.user}, {self.tv_show})"
