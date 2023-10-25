@@ -66,8 +66,8 @@ class TitleEpisode(models.Model):
     title = models.ForeignKey(
         Title, related_name="episodes", on_delete=models.CASCADE
     )
-    season_Number = models.PositiveIntegerField(unique=True)
-    episode_Number = models.PositiveIntegerField(unique=True)
+    season_Number = models.PositiveIntegerField()
+    episode_Number = models.PositiveIntegerField()
 
     class Meta:
         app_label = 'imdb_django'
