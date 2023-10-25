@@ -53,7 +53,7 @@ class NameDataImportCommand(BaseCommand):
         known_for_titles_list = known_for_titles_str.split(",")
         title_instances = Title.objects.filter(t_const__in=known_for_titles_list)
         for title_instance in title_instances:
-            _, created = Title.objects.get_or_create(name=name_instance, title=title_instance)
+            Title.objects.get_or_create(name=name_instance, title=title_instance)
 
     def log_row_data(self, row_count, n_const, primary_Name, birth_Year, death_Year, primary_Profession, known_For_Titles):
         log_info(f"Loaded row {row_count}:", {
