@@ -1,11 +1,8 @@
-# myapp/management/commands/import_ratings_data.py
-
 import csv
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Title, TitleRating
-from helper import log_info  # Import the log_info function
-
+from helper import log_info
 
 class RatingsDataImportCommand(BaseCommand):
     help = "Load data from TSV file into TitleRating model"
@@ -22,11 +19,8 @@ class RatingsDataImportCommand(BaseCommand):
             title_ratings_to_create = []
 
             with transaction.atomic():
-                row_count = 0
-
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     title_ratings_to_create.append(self.process_row(row, row_count))
-                    row_count += 1
 
                 # Use bulk_create to insert the rows with ignore_conflicts=True
                 TitleRating.objects.bulk_create(title_ratings_to_create, ignore_conflicts=True)

@@ -1,5 +1,3 @@
-# myapp/management/commands/import_name_data.py
-
 import csv
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -21,11 +19,8 @@ class NameDataImportCommand(BaseCommand):
             name_data_to_create = []
 
             with transaction.atomic():
-                row_count = 0
-
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     name_data_to_create.append(self.process_row(row, row_count))
-                    row_count += 1
 
                 # Use bulk_create to insert the rows with ignore_conflicts=True
                 Name.objects.bulk_create(name_data_to_create, ignore_conflicts=True)
@@ -35,14 +30,17 @@ class NameDataImportCommand(BaseCommand):
 
     def process_row(self, row, row_count):
         n_const = row["nconst"]
-        primaryName = row["primaryName"]
-        birthYear = int(row["birthYear"]) if row["birthYear"] != "\\N" else None
-        deathYear = int(row["deathYear"]) if row["deathYear"] != "\\N" else None
+        primary_Name = row["primaryName"]
+        birth_Year = int(row["birthYear"]) if row["birthYear"] != "\\N" else None
+        death_Year = int(row["deathYear"]) if row["deathYear"] != "\\N" else None
         primary_Profession = row["primaryProfession"]
         known_for_titles_str = row["knownForTitles"]
 
         name_instance, _ = self.get_or_create_name(n_const)
         self.process_known_for_titles(name_instance, known_for_titles_str)
+
+        # Log the data for the current row using log_info function
+        self.log_row_data(row_count, n_const, primary_Name, birth_Year, death_Year, primary_Profession, known_for_titles_str)
 
         return Name(
             n_const=n_const,

@@ -23,7 +23,7 @@ class Title(models.Model):
     start_Year = models.CharField(max_length=20, blank=True)
     end_Year = models.CharField(max_length=20, blank=True)
     runtime_Minutes = models.CharField(max_length=20, blank=True)
-    genres = models.ManyToManyField(Genre, related_name='genres')
+    genres = models.ManyToManyField(Genre, related_name='genres', related_query_name='genre')
 
     class Meta:
         app_label = 'imdb_django'
@@ -51,8 +51,8 @@ class TitleAka(models.Model):
 
 class TitleCrew(models.Model):
     t_const = models.ForeignKey(Title, related_name='crew', on_delete=models.CASCADE)
-    directors = models.ManyToManyField("Name", related_name="directed_titles")
-    writers = models.ManyToManyField("Name", related_name="written_titles")
+    directors = models.ManyToManyField("Name", related_name="directed_titles", related_query_name="directed_title")
+    writers = models.ManyToManyField("Name", related_name="written_titles", related_query_name="written_title")
 
     class Meta:
         app_label = 'imdb_django'
@@ -71,6 +71,7 @@ class TitleEpisode(models.Model):
 
     class Meta:
         app_label = 'imdb_django'
+        unique_together = ('season_Number', 'episode_Number')
 
     def __str__(self):
         return f"({self.t_const}, {self.season_Number}, {self.episode_Number})"
@@ -114,7 +115,7 @@ class Name(models.Model):
     birth_Year = models.PositiveIntegerField(null=True, blank=True)
     death_Year = models.PositiveIntegerField(null=True, blank=True)
     primary_Profession = models.CharField(max_length=255)
-    known_For_Titles = models.ManyToManyField(Title, related_name="known_for_names")
+    known_For_Titles = models.ManyToManyField(Title, related_name="known_for_movies", related_query_name="movies")
 
     class Meta:
         app_label = 'imdb_django'
@@ -124,8 +125,8 @@ class Name(models.Model):
 
 
 class UserFavoriteTVShow(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    tv_show = models.ForeignKey(Title, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="users", on_delete=models.CASCADE)
+    tv_show = models.ForeignKey(Title, related_name="fav_tv_show", on_delete=models.CASCADE)
 
     class Meta:
         app_label = 'imdb_django'

@@ -1,12 +1,8 @@
-# myapp/management/commands/import_crew_data.py
-
 import csv
-import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Name, Title, TitleCrew
 from helper import log_info  # Import the log_info function
-
 
 class CrewDataImportCommand(BaseCommand):
     help = "Load data from TSV file into TitleCrew model"
@@ -23,11 +19,8 @@ class CrewDataImportCommand(BaseCommand):
             title_crew_data = []
 
             with transaction.atomic():
-                row_count = 0
-
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     title_crew_data.append(self.process_row(row, row_count))
-                    row_count += 1
 
                 # Use bulk_create to insert or update the rows with ignore_conflicts=True
                 TitleCrew.objects.bulk_create(title_crew_data, ignore_conflicts=True)

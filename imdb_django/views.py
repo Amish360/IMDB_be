@@ -37,7 +37,7 @@ class TitleList(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Title.objects.filter(
-            Q(titleType__icontains="movie") | Q(titleType__icontains="tvSeries")
+            Q(title_Type__icontains="movie") | Q(title_Type__icontains="tvSeries")
         )
 
         return queryset
@@ -50,8 +50,8 @@ class UserFavoriteTVShowViewSet(viewsets.ModelViewSet):
 
 class NameListView(generics.ListAPIView):
     queryset = Name.objects.filter(
-        Q(primaryProfession__icontains="actor")
-        | Q(primaryProfession__icontains="actress")
+        Q(primary_Profession__icontains="actor")
+        | Q(primary_Profession__icontains="actress")
     )
     serializer_class = NameSerializer
 
@@ -72,7 +72,7 @@ class RandomTitleList(APIView):
         random_titles = random.sample(
             list(
                 Title.objects.filter(
-                    Q(titleType__icontains="movie") | Q(titleType__icontains="tvSeries")
+                    Q(title_Type__icontains="movie") | Q(title_Type__icontains="tvSeries")
                 )
             ),
             5,
@@ -90,9 +90,9 @@ def search_names(request):
 
     # Query to filter based on the primaryName field in the Name model
     if search_term:
-        names = Name.objects.filter(primaryName__icontains=search_term).order_by('primaryName')
+        names = Name.objects.filter(primary_Name__icontains=search_term).order_by('primary_Name')
     else:
-        names = Name.objects.all().order_by('primaryName')
+        names = Name.objects.all().order_by('primary_Name')
 
     # Serialize the names using the serializer
     serializer = NameSerializer(names, many=True)
@@ -106,9 +106,9 @@ def search_movies(request):
 
     # Query to filter based on the primaryTitle field in the Title model
     if search_term:
-        movies = Title.objects.filter(primaryTitle__icontains=search_term).order_by('primaryTitle')
+        movies = Title.objects.filter(primary_Title__icontains=search_term).order_by('primary_Title')
     else:
-        movies = Title.objects.all().order_by('primaryTitle')
+        movies = Title.objects.all().order_by('primary_Title')
 
     # Serialize the movies using the serializer
     serializer = TitleSerializer(movies, many=True)

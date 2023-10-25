@@ -1,11 +1,8 @@
-# myapp/management/commands/import_title_data.py
-
 import csv
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Genre, Title
-from helper import log_info  # Import the log_info function
-
+from helper import log_info
 
 class TitleDataImportCommand(BaseCommand):
     help = "Load data from TSV file into MySQL database"
@@ -20,10 +17,9 @@ class TitleDataImportCommand(BaseCommand):
             tsv_reader = csv.DictReader(tsv_file, delimiter="\t")
 
             with transaction.atomic():  # Use a transaction for database consistency
-                row_count = 0  # Initialize a row count
                 titles_to_create = []
 
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     title, genres_list = self.process_row(row)
                     titles_to_create.append(title)
 
@@ -32,7 +28,6 @@ class TitleDataImportCommand(BaseCommand):
                         titles_to_create.clear()
 
                     self.add_genres_to_title(title, genres_list)
-                    row_count += 1
 
                 # Insert any remaining titles
                 if titles_to_create:

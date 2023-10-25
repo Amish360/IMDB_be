@@ -139,6 +139,8 @@ env.bak/
 venv.bak/
 
 
+.pyc/
+
 #idea files
 .idea/
 

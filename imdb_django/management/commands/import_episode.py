@@ -1,14 +1,8 @@
-# myapp/management/commands/import_episode_data.py
-
 import csv
-import logging
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Title, TitleEpisode
-from helper import log_info  # Import the log_info function
-
-# Initialize the logger
-logger = logging.getLogger(__name)
+from helper import log_info
 
 class EpisodeDataImportCommand(BaseCommand):
     help = "Load data from TSV file into MySQL database"
@@ -25,11 +19,8 @@ class EpisodeDataImportCommand(BaseCommand):
             title_episodes_to_create = []
 
             with transaction.atomic():
-                row_count = 0
-
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     title_episodes_to_create.append(self.process_row(row, row_count))
-                    row_count += 1
 
                 # Use bulk_create to insert or update the rows with ignore_conflicts=True
                 TitleEpisode.objects.bulk_create(title_episodes_to_create, ignore_conflicts=True)

@@ -1,12 +1,9 @@
-# myapp/management/commands/import_principals_data.py
-
 import csv
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from imdb_django.models import Name, Title, TitlePrincipal
-from helper import log_info  # Import the log_info function
+from helper import log_info, logger
 
-# Initialize the logger
 
 class PrincipalsDataImportCommand(BaseCommand):
     help = "Load data from TSV file into TitlePrincipal model"
@@ -23,11 +20,8 @@ class PrincipalsDataImportCommand(BaseCommand):
             title_principals_to_create = []
 
             with transaction.atomic():
-                row_count = 0
-
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     title_principals_to_create.append(self.process_row(row, row_count))
-                    row_count += 1
 
                 # Use bulk_create to insert the rows with ignore_conflicts=True
                 TitlePrincipal.objects.bulk_create(title_principals_to_create, ignore_conflicts=True)

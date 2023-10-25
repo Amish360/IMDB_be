@@ -1,8 +1,8 @@
 import csv
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from imdb_django.models import TitleAka  # Replace 'myapp' with the actual app name
-from helper import log_info  # Import the log_info function
+from imdb_django.models import TitleAka
+from helper import log_info
 
 class AkasDataImportCommand(BaseCommand):
     help = "Load data from TSV file into MySQL database"
@@ -19,11 +19,8 @@ class AkasDataImportCommand(BaseCommand):
             title_akas_to_create = []
 
             with transaction.atomic():  # Use a transaction for database consistency
-                row_count = 0  # Initialize a row count
-
-                for row in tsv_reader:
+                for row_count, row in enumerate(tsv_reader, start=1):
                     self.process_row(row, title_akas_to_create, row_count)
-                    row_count += 1
 
             # Use bulk_create to insert the rows with ignore_conflicts=True
             TitleAka.objects.bulk_create(title_akas_to_create, ignore_conflicts=True)
