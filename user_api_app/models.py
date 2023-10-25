@@ -19,8 +19,5 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomUserManager()
 
-    class Meta:
-        app_label = 'user_app'
-
     def __str__(self):
-        return f"{self.email} ({self.country}) ({self.age})"
+        return self.email

@@ -64,7 +64,7 @@ class TitleCrew(models.Model):
 class TitleEpisode(models.Model):
     t_const = models.OneToOneField(Title, primary_key=True, related_name='episodes', on_delete=models.CASCADE)
     title = models.ForeignKey(
-        Title, related_name="episodes", on_delete=models.CASCADE
+        Title, related_name="season", on_delete=models.CASCADE
     )
     season_Number = models.PositiveIntegerField()
     episode_Number = models.PositiveIntegerField()
@@ -125,7 +125,7 @@ class Name(models.Model):
 
 
 class UserFavoriteTVShow(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="users", on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="fav_show", on_delete=models.CASCADE)
     tv_show = models.ForeignKey(Title, related_name="fav_tv_show", on_delete=models.CASCADE)
 
     class Meta:

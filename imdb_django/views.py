@@ -22,8 +22,8 @@ class TitleFilter(django_filters.FilterSet):
     class Meta:
         model = Title
         fields = {
-            "titleType": ["exact", "icontains"],
-            "isAdult": ["exact"],
+            "title_Type": ["exact", "icontains"],
+            "is_Adult": ["exact"],
             "genres__name": ["exact"],
         }
 
