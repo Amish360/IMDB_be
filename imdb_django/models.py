@@ -33,7 +33,7 @@ class Title(models.Model):
 
 
 class TitleAka(models.Model):
-    t_const = models.ForeignKey(Title, related_name='Aka', on_delete=models.CASCADE)
+    t_const = models.ForeignKey(Title, related_name='Aka', null=True, on_delete=models.CASCADE)
     ordering = models.PositiveIntegerField()
     title = models.TextField()
     region = models.CharField(max_length=10)
@@ -62,7 +62,7 @@ class TitleCrew(models.Model):
 
 
 class TitleEpisode(models.Model):
-    t_const = models.OneToOneField(Title, primary_key=True, related_name='episodes', on_delete=models.CASCADE)
+    t_const = models.OneToOneField(Title, null=False, related_name='episodes', on_delete=models.CASCADE)
     title = models.ForeignKey(
         Title, related_name="season", on_delete=models.CASCADE
     )
@@ -71,16 +71,16 @@ class TitleEpisode(models.Model):
 
     class Meta:
         app_label = 'imdb_django'
-        unique_together = ('season_Number', 'episode_Number')
+        unique_together = ('t_const', 'season_Number', 'episode_Number')
 
     def __str__(self):
         return f"({self.t_const}, {self.season_Number}, {self.episode_Number})"
 
 
 class TitlePrincipal(models.Model):
-    t_const = models.ForeignKey(Title, related_name='principal', on_delete=models.CASCADE)
+    t_const = models.ForeignKey(Title, related_name='principal', default='tt000001', on_delete=models.CASCADE)
     ordering = models.PositiveIntegerField()
-    n_const = models.ForeignKey("Name", related_name='principal_names', on_delete=models.CASCADE)
+    n_const = models.ForeignKey("Name", related_name='principal_names', default='nn000001', on_delete=models.CASCADE)
     category = models.CharField(max_length=50)
     job = models.CharField(max_length=255)
     characters = models.CharField(max_length=255)
@@ -124,12 +124,6 @@ class Name(models.Model):
         return f"({self.primary_Name}, {self.primary_Profession})"
 
 
-class UserFavoriteTVShow(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="fav_show", on_delete=models.CASCADE)
-    tv_show = models.ForeignKey(Title, related_name="fav_tv_show", on_delete=models.CASCADE)
-
-    class Meta:
-        app_label = 'imdb_django'
-
-    def __str__(self):
-        return f"({self.user}, {self.tv_show})"
+class WishlistItem(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="wishlist_shows",on_delete=models.CASCADE)
+    t_const = models.CharField(max_length=10, unique=True)

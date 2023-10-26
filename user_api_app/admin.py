@@ -12,6 +12,7 @@ class CustomUserAdmin(UserAdmin):
         "country",
         "is_staff",
         "is_active",
+        "receive_mails",
     )
     list_filter = (
         "email",
@@ -19,9 +20,10 @@ class CustomUserAdmin(UserAdmin):
         "country",
         "is_staff",
         "is_active",
+        "receive_mails",
     )
     fieldsets = (
-        (None, {"fields": ("email", "password", "age", "country")}),
+        (None, {"fields": ("email", "password", "age", "country", "receive_mails")}),
         (
             "Permissions",
             {"fields": ("is_staff", "is_active", "groups", "user_permissions")},
@@ -37,6 +39,7 @@ class CustomUserAdmin(UserAdmin):
                     "password1",
                     "password2",
                     "age",
+                    "receive_mails",
                     "country",
                     "is_staff",
                     "is_active",
