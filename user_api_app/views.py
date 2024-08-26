@@ -1,15 +1,13 @@
-from django.conf import settings
 import jwt
-from django.contrib.auth import authenticate
-from django.contrib.auth import login
-from rest_framework import generics
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import api_view
-from rest_framework.decorators import permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
+from django.contrib.auth import authenticate, login
+from rest_framework import generics, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import datetime
+from datetime import timedelta
 
 
 from .models import CustomUser
@@ -31,8 +29,8 @@ class CustomUserList(generics.ListCreateAPIView):
 
         # Create a response with the token data
         response_data = {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
         }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
@@ -42,24 +40,26 @@ class CustomUserDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CustomUserSerializer
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def get_user_profile(request):
     user = request.user
     data = {
-        'email': user.email,
-        'country': user.country,
-        'age': user.age,
+        "email": user.email,
+        "country": user.country,
+        "age": user.age,
+        "Receive mails": user.receive_mails,
     }
     return Response(data)
 
 
-@api_view(['PUT'])
+@api_view(["PUT"])
 @permission_classes([IsAuthenticated])
 def update_user_profile(request):
     user = request.user
-    user.country = request.data.get('country', user.country)
-    user.age = request.data.get('age', user.age)
+    user.country = request.data.get("country", user.country)
+    user.age = request.data.get("age", user.age)
+    user.receive_mails = request.data.get("Receive mails", user.receive_mails)
     user.save()
     return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -70,21 +70,23 @@ def user_login(request):
     email = request.data.get("email")  # Use 'email' instead of 'username'
     password = request.data.get("password")
 
-    user = authenticate(request, email=email, password=password)  # Use 'email' for authentication
+    user = authenticate(
+        request, email=email, password=password
+    )  # Use 'email' for authentication
     if user is not None:
         login(request, user)
 
         # Include user-related data in the JWT payload
         payload = {
-            'user_id': user.id,
-            'email': user.email,  # Use 'email' field for the JWT payload
-            'country': user.country,
-            'age': user.age,
+            "user_id": user.id,
+            "email": user.email,  # Use 'email' field for the JWT payload
+            "country": user.country,
+            "age": user.age,
             # Include other user-related data here
         }
 
         # Create and sign the JWT access token
-        access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+        access_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
         return Response({"access_token": access_token})
     else:

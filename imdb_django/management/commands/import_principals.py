@@ -1,11 +1,11 @@
 import csv
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from imdb_django.models import Name, Title, TitlePrincipal
-from helper import log_info, logger
+from django.db.utils import IntegrityError, DataError
+from imdb_django.models import Title, TitlePrincipal, Name
+from helper import log_info
 
-
-class PrincipalsDataImportCommand(BaseCommand):
+class Command(BaseCommand):
     help = "Load data from TSV file into TitlePrincipal model"
 
     def add_arguments(self, parser):
@@ -17,17 +17,19 @@ class PrincipalsDataImportCommand(BaseCommand):
         with open(tsv_file_path, "r", encoding="utf-8") as tsv_file:
             tsv_reader = csv.DictReader(tsv_file, delimiter="\t")
 
-            title_principals_to_create = []
-
             with transaction.atomic():
+                title_principals_to_create = []
+                row_count = 0
+
                 for row_count, row in enumerate(tsv_reader, start=1):
-                    title_principals_to_create.append(self.process_row(row, row_count))
+                    title_principal = self.process_row(row,row_count)
+                    if title_principal:
+                        title_principals_to_create.append(title_principal)
 
-                # Use bulk_create to insert the rows with ignore_conflicts=True
-                TitlePrincipal.objects.bulk_create(title_principals_to_create, ignore_conflicts=True)
+                # Bulk create TitlePrincipal instances
+                TitlePrincipal.objects.bulk_create(title_principals_to_create)
 
-        # Log a message to indicate completion
-        log_info(f"\nData import completed. Loaded {row_count} rows.")
+                log_info(f"\nData import completed. Loaded {row_count} rows.")
 
     def process_row(self, row, row_count):
         t_const = row["tconst"]
@@ -37,29 +39,38 @@ class PrincipalsDataImportCommand(BaseCommand):
         job = row["job"]
         characters = row["characters"]
 
-        title_instance, _ = self.get_or_create_title(t_const)
-        name_instance, _ = self.get_or_create_name(n_const)
-        job = self.truncate_job(job)
+        title_instance = self.get_or_create_title(t_const)
+        name_instance = self.get_or_create_name(n_const)
 
-        # Log the data for the current row using log_info function
         self.log_row_data(row_count, t_const, ordering, n_const, category, job, characters)
 
-        return TitlePrincipal(
-            t_const=title_instance,
-        )
+        try:
+            title_principal = TitlePrincipal(
+                t_const=title_instance,
+                n_const=name_instance,
+            )
+        except DataError:
+            log_info(f"Skipped: DataError occurred. Skipping row due to 'job' field length.")
+            return None
+
+        return title_principal
 
     def get_or_create_title(self, t_const):
-        return Title.objects.get_or_create(t_const=t_const)
+        try:
+            return Title.objects.get(t_const=t_const)
+        except Title.DoesNotExist:
+            log_info(f"Failed to load row: Title with t_const {t_const} does not exist")
+            return None
 
     def get_or_create_name(self, n_const):
-        return Name.objects.get_or_create(n_const=n_const)
+        try:
+            return Name.objects.get(n_const=n_const)
+        except Name.DoesNotExist:
+            log_info(f"Failed to load row: Name with n_const {n_const} does not exist")
+            return None
 
-    def truncate_job(self, job):
-        max_job_length = TitlePrincipal._meta.get_field("job").max_length
-        if len(job) > max_job_length:
-            logger.warning(f'Truncated "job" field value. Original value: {job}')
-            job = job[:max_job_length]
-        return job
+    def log_info(self, message):
+        log_info(message)
 
     def log_row_data(self, row_count, t_const, ordering, n_const, category, job, characters):
         log_info(f"Loaded row {row_count}:", {
